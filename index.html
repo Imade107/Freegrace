@@ -1,0 +1,1255 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>GeminIsland</title>
+    <meta
+      name="description"
+      content="Shared sunlit 3D voxel island where anyone can sculpt animated creations and explore live together."
+    />
+    <meta name="theme-color" content="#ffffff" />
+
+    <!-- Favicons & App Icons -->
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png" />
+    <link rel="icon" type="image/png" sizes="64x64" href="/favicon.png" />
+    <link rel="shortcut icon" href="/favicon.ico" />
+    <link rel="manifest" href="/site.webmanifest" />
+
+    <!-- Open Graph / Apple Messages / WhatsApp / Discord -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="GeminIsland" />
+    <meta property="og:locale" content="en_US" />
+    <meta property="og:title" content="GeminIsland" />
+    <meta
+      property="og:description"
+      content="Shared sunlit 3D voxel island where anyone can sculpt animated creations and explore live together."
+    />
+
+    <!-- X / Twitter -->
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="GeminIsland" />
+    <meta
+      name="twitter:description"
+      content="Shared sunlit 3D voxel island where anyone can sculpt animated creations and explore live together."
+    />
+
+    <!-- Apple Web App -->
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="GeminIsland" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <!-- Endless Animated Sunlit Grass Voxel Canvas -->
+    <canvas id="world-canvas" aria-label="Shared animated 3D voxel grass world"></canvas>
+
+    <!-- Camera Controls (Desktop + Mobile: Pan / Orbit / Walk + Recentre) -->
+    <div id="cam-controls" class="cam-controls" role="toolbar" aria-label="Camera controls">
+      <div class="cam-mode-group" role="group" aria-label="Camera mode">
+        <button
+          type="button"
+          id="cam-pan-btn"
+          class="cam-mode-btn is-active"
+          aria-pressed="true"
+          title="Move camera"
+        >
+          <svg class="cam-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M12 3v18M3 12h18M12 3l-3 3M12 3l3 3M12 21l-3-3M12 21l3-3M3 12l3-3M3 12l3 3M21 12l-3-3M21 12l-3 3" />
+          </svg>
+          <span>Pan</span>
+        </button>
+        <button
+          type="button"
+          id="cam-orbit-btn"
+          class="cam-mode-btn"
+          aria-pressed="false"
+          title="Spin and tilt camera"
+        >
+          <svg class="cam-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M21 12a9 9 0 1 1-2.64-6.36" />
+            <polyline points="21 3 21 9 15 9" />
+          </svg>
+          <span>Orbit</span>
+        </button>
+        <button
+          type="button"
+          id="cam-walk-btn"
+          class="cam-mode-btn"
+          aria-pressed="false"
+          title="Walk in first person"
+        >
+          <svg class="cam-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="12" cy="4.5" r="2" />
+            <path d="M8.5 20.5L10.8 14l3.2 2.8.6 3.7" />
+            <path d="M10.8 14l1-5.2" />
+            <path d="M7.5 12.4l3.8-3.4 3.4 1 2.3 2.2" />
+          </svg>
+          <span>Walk</span>
+        </button>
+      </div>
+
+      <button
+        type="button"
+        id="recenter-btn"
+        class="cam-recenter-btn"
+        aria-label="Recentre camera"
+        title="Recentre camera"
+      >
+        <svg class="cam-icon cam-compass-svg" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.8" stroke-opacity="0.35" />
+          <g id="recenter-compass">
+            <polygon points="12,4.2 14.7,12 9.3,12" fill="#d94e43" />
+            <polygon points="12,19.8 14.7,12 9.3,12" fill="currentColor" fill-opacity="0.55" />
+          </g>
+        </svg>
+        <span>Recentre</span>
+      </button>
+
+      <button
+        type="button"
+        id="avatar-btn"
+        class="cam-recenter-btn cam-avatar-btn"
+        aria-label="Customize character"
+        title="Customize character"
+      >
+        <svg class="cam-icon cam-avatar-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <rect x="7.5" y="3.5" width="9" height="8" rx="2" />
+          <path d="M5.5 20.5v-2.2a3.8 3.8 0 0 1 3.8-3.8h5.4a3.8 3.8 0 0 1 3.8 3.8v2.2" />
+        </svg>
+        <span class="avatar-swatch-dot" id="avatar-swatch-dot" aria-hidden="true"></span>
+        <span>Character</span>
+      </button>
+
+      <button
+        type="button"
+        id="sound-toggle-btn"
+        class="cam-recenter-btn cam-sound-btn"
+        aria-pressed="true"
+        aria-label="Toggle world sound effects"
+        title="Toggle soundscapes, footsteps & SFX"
+      >
+        <svg class="cam-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
+          <path d="M15.54 8.46a5 5 0 0 1 0 7.07" />
+          <path d="M19.07 4.93a10 10 0 0 1 0 14.14" />
+        </svg>
+        <span id="sound-toggle-label">Sound</span>
+      </button>
+
+      <button
+        type="button"
+        id="ptt-mic-btn"
+        class="cam-recenter-btn cam-mic-btn"
+        aria-pressed="false"
+        aria-label="Hold to talk with players (V)"
+        title="Hold or press [V] to talk to nearby players"
+      >
+        <svg class="cam-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <rect x="9" y="2" width="6" height="11" rx="3" />
+          <path d="M5 10v1a7 7 0 0 0 14 0v-1" />
+          <line x1="12" y1="18" x2="12" y2="22" />
+          <line x1="8" y1="22" x2="16" y2="22" />
+        </svg>
+        <span id="ptt-mic-label">Talk [V]</span>
+      </button>
+
+      <button
+        type="button"
+        id="music-toggle-btn"
+        class="cam-recenter-btn cam-music-btn"
+        aria-pressed="true"
+        aria-label="Toggle background music"
+        title="Toggle adaptive background music"
+      >
+        <svg class="cam-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M9 18V5l12-2v13" />
+          <circle cx="6" cy="18" r="3" />
+          <circle cx="18" cy="16" r="3" />
+        </svg>
+        <span id="music-toggle-label">Music</span>
+      </button>
+
+      <button
+        type="button"
+        id="music-menu-btn"
+        class="cam-recenter-btn cam-music-menu-btn"
+        aria-expanded="false"
+        aria-controls="music-popover"
+        aria-label="Music station and volume"
+        title="Choose music station & volume"
+      >
+        <svg class="cam-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <polyline points="6 9 12 15 18 9" />
+        </svg>
+      </button>
+
+      <div id="music-popover" class="music-popover" role="region" aria-label="Background music controls" hidden>
+        <div class="music-popover-head">
+          <span class="music-popover-title">Now Playing</span>
+          <span id="music-theme-label" class="music-theme-label">Sunlit Island Breeze</span>
+        </div>
+        <label class="music-field-row" for="music-station-select">
+          <span>Station</span>
+          <select id="music-station-select" class="music-station-select">
+            <option value="auto">Auto · Dynamic World</option>
+            <option value="meadow">Sunlit Island Breeze</option>
+            <option value="lofi">Rainy Lo-Fi Rhodes</option>
+            <option value="ambient">Winter Celesta</option>
+            <option value="synthwave">Grand Prix Synthwave</option>
+            <option value="chase">Patrol Midnight Groove</option>
+          </select>
+        </label>
+        <label class="music-field-row" for="music-volume-range">
+          <span>Volume</span>
+          <input id="music-volume-range" class="music-volume-range" type="range" min="10" max="100" value="44" />
+        </label>
+      </div>
+
+      <button
+        type="button"
+        id="cam-view-btn"
+        class="cam-recenter-btn cam-view-btn"
+        aria-pressed="true"
+        aria-label="Toggle camera view mode (C)"
+        title="Switch between 3rd Person and 1st Person [C]"
+      >
+        <svg class="cam-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+          <circle cx="12" cy="12" r="3" />
+        </svg>
+        <span id="cam-view-label">3rd Person</span>
+      </button>
+
+      <button
+        type="button"
+        id="greet-btn"
+        class="cam-recenter-btn cam-greet-btn"
+        aria-label="Greet friends and nearby players (G)"
+        title="Say hello and wave to friends [G]"
+      >
+        <svg class="cam-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M18 11V6a2 2 0 0 0-4 0v5" />
+          <path d="M14 10V4a2 2 0 0 0-4 0v6" />
+          <path d="M10 10.5V6a2 2 0 0 0-4 0v8" />
+          <path d="M6 14v-2a2 2 0 0 0-4 0v5a7 7 0 0 0 14 0v-3" />
+        </svg>
+        <span>Greet [G]</span>
+      </button>
+
+      <button
+        type="button"
+        id="hide-hud-btn"
+        class="cam-recenter-btn cam-hide-btn"
+        aria-label="Hide UI overlays (U)"
+        title="Hide controls to view clean background [U]"
+      >
+        <svg class="cam-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
+          <line x1="1" y1="1" x2="23" y2="23" />
+        </svg>
+        <span>Hide UI [U]</span>
+      </button>
+
+      <button
+        type="button"
+        id="online-pill"
+        class="online-pill online-pill-btn"
+        aria-expanded="false"
+        aria-controls="ops-drawer"
+        title="Players online & Multiplayer Hub"
+        hidden
+      >
+        <span class="live-dot" aria-hidden="true"></span>
+        <span id="online-count">1</span>
+        <span class="online-pill-label">Live</span>
+      </button>
+    </div>
+
+    <!-- Floating Show UI Pill (Visible when HUD is hidden) -->
+    <button
+      type="button"
+      id="unhide-hud-pill"
+      class="unhide-hud-pill"
+      aria-label="Show interface controls [U]"
+      title="Show interface overlays [U]"
+      hidden
+    >
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+        <circle cx="12" cy="12" r="3" />
+      </svg>
+      <span>Show UI [U]</span>
+    </button>
+
+    <!-- Top-Left Cities, Race, Shop, Deliveries & Police Radio Dock -->
+    <div id="ops-dock" class="ops-dock" aria-label="Map, cities, racing, shopping, deliveries and police radio">
+      <div class="ops-triggers">
+        <button
+          type="button"
+          id="map-toggle-btn"
+          class="ops-trigger-btn"
+          aria-expanded="false"
+          aria-controls="ops-drawer"
+          title="Island Navigation Map (N)"
+        >
+          <svg class="ops-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21" />
+            <line x1="9" y1="3" x2="9" y2="18" />
+            <line x1="15" y1="6" x2="15" y2="21" />
+          </svg>
+          <span class="ops-trigger-label">Map</span>
+        </button>
+
+        <button
+          type="button"
+          id="cities-toggle-btn"
+          class="ops-trigger-btn"
+          aria-expanded="false"
+          aria-controls="ops-drawer"
+          title="Explore GeminIsland Cities"
+        >
+          <svg class="ops-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <rect x="3" y="10" width="6" height="11" rx="1" />
+            <rect x="9" y="4" width="6" height="17" rx="1" />
+            <rect x="15" y="8" width="6" height="13" rx="1" />
+          </svg>
+          <span id="cities-trigger-label" class="ops-trigger-label">Cities</span>
+        </button>
+
+        <button
+          type="button"
+          id="race-toggle-btn"
+          class="ops-trigger-btn"
+          aria-expanded="false"
+          aria-controls="ops-drawer"
+          title="Island Grand Prix Car Race"
+        >
+          <svg class="ops-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z" />
+            <line x1="4" y1="22" x2="4" y2="15" />
+          </svg>
+          <span class="ops-trigger-label">Race</span>
+        </button>
+
+        <button
+          type="button"
+          id="shop-toggle-btn"
+          class="ops-trigger-btn"
+          aria-expanded="false"
+          aria-controls="ops-drawer"
+          title="Island Stores & Wallet"
+        >
+          <svg class="ops-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z" />
+            <line x1="3" y1="6" x2="21" y2="6" />
+            <path d="M16 10a4 4 0 0 1-8 0" />
+          </svg>
+          <span id="shop-trigger-label" class="ops-trigger-label">Shop · <span id="wallet-trigger-credits">120</span> cr</span>
+        </button>
+
+        <button
+          type="button"
+          id="mission-toggle-btn"
+          class="ops-trigger-btn"
+          aria-expanded="false"
+          aria-controls="ops-drawer"
+          title="Delivery missions (M)"
+        >
+          <svg class="ops-icon" id="mission-compass-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z" />
+            <path d="m3.3 7 8.7 5 8.7-5" />
+            <path d="M12 22V12" />
+          </svg>
+          <span id="mission-trigger-label" class="ops-trigger-label">Deliveries</span>
+        </button>
+
+        <button
+          type="button"
+          id="radio-toggle-btn"
+          class="ops-trigger-btn"
+          aria-expanded="false"
+          aria-controls="ops-drawer"
+          title="Police radio chat (R)"
+        >
+          <svg class="ops-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M12 2 4 5v6.09c0 5.05 3.41 9.76 8 10.91 4.59-1.15 8-5.86 8-10.91V5l-8-3z" />
+            <path d="M9.5 11.5h5" />
+            <path d="M12 9v5" />
+          </svg>
+          <span class="ops-trigger-label">Police Chat</span>
+          <span id="radio-unread-count" class="ops-unread-count" hidden>0</span>
+        </button>
+
+        <button
+          type="button"
+          id="delivery-ride-dock-btn"
+          class="ops-trigger-btn ops-ride-btn"
+          title="Hop on Courier Delivery Scooter [R]"
+        >
+          <svg class="ops-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="5.5" cy="17.5" r="3.5" />
+            <circle cx="18.5" cy="17.5" r="3.5" />
+            <path d="M15 6h4l2 6H5.5" />
+            <path d="M9 17h6" />
+          </svg>
+          <span class="ops-trigger-label">Ride [R]</span>
+        </button>
+
+        <button
+          type="button"
+          id="features-bottom-btn"
+          class="ops-trigger-btn ops-features-btn"
+          aria-expanded="false"
+          aria-controls="features-drawer"
+          title="See all island features and systems"
+        >
+          <svg class="ops-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+          </svg>
+          <span class="ops-trigger-label">⚡ Features</span>
+        </button>
+      </div>
+
+      <section id="ops-drawer" class="ops-drawer" aria-label="Island hub panel" hidden>
+        <header class="ops-drawer-header">
+          <div class="ops-tabs ops-tabs-7" role="tablist" aria-label="Island sections">
+            <button type="button" id="ops-tab-map" class="ops-tab-btn" role="tab" aria-selected="false">Map</button>
+            <button type="button" id="ops-tab-cities" class="ops-tab-btn" role="tab" aria-selected="false">Cities</button>
+            <button type="button" id="ops-tab-race" class="ops-tab-btn" role="tab" aria-selected="false">Race</button>
+            <button type="button" id="ops-tab-shop" class="ops-tab-btn" role="tab" aria-selected="false">Shop</button>
+            <button type="button" id="ops-tab-missions" class="ops-tab-btn is-active" role="tab" aria-selected="true">Deliver</button>
+            <button type="button" id="ops-tab-radio" class="ops-tab-btn" role="tab" aria-selected="false">Radio</button>
+            <button type="button" id="ops-tab-players" class="ops-tab-btn" role="tab" aria-selected="false">Players</button>
+          </div>
+          <button
+            type="button"
+            id="ops-close-btn"
+            class="icon-close-btn ops-close-btn"
+            aria-label="Close panel"
+          >
+            &times;
+          </button>
+        </header>
+
+        <!-- Interactive GPS Navigation Map Panel -->
+        <div id="map-panel" class="ops-panel" hidden>
+          <div class="map-canvas-wrap">
+            <canvas id="full-map-canvas" class="full-map-canvas" aria-label="Interactive GeminIsland navigation map"></canvas>
+            <div class="map-zoom-controls">
+              <button type="button" id="map-zoom-in" class="map-ctrl-btn" title="Zoom in" aria-label="Zoom in map">+</button>
+              <button type="button" id="map-zoom-out" class="map-ctrl-btn" title="Zoom out" aria-label="Zoom out map">&minus;</button>
+              <button type="button" id="map-center-btn" class="map-ctrl-btn" title="Center on player" aria-label="Center on player">
+                <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true">
+                  <circle cx="12" cy="12" r="5" />
+                  <line x1="12" y1="2" x2="12" y2="6" />
+                  <line x1="12" y1="18" x2="12" y2="22" />
+                  <line x1="2" y1="12" x2="6" y2="12" />
+                  <line x1="18" y1="12" x2="22" y2="12" />
+                </svg>
+              </button>
+              <button type="button" id="map-fit-btn" class="map-ctrl-btn" title="Overview whole island" aria-label="Fit entire island">All</button>
+            </div>
+            <div class="map-legend">
+              <span><i class="map-dot is-player"></i>You</span>
+              <span><i class="map-dot is-peer"></i>Peer</span>
+              <span><i class="map-dot is-pickup"></i>Pickup</span>
+              <span><i class="map-dot is-dropoff"></i>Dropoff</span>
+              <span><i class="map-dot is-shop"></i>Shop</span>
+            </div>
+          </div>
+
+          <div class="map-route-card">
+            <div class="map-route-top">
+              <div>
+                <div id="map-route-title" class="map-route-title">Tap anywhere on map to set route</div>
+                <div id="map-route-meta" class="map-route-meta">Road-network GPS · Click a building or drop a pin</div>
+              </div>
+              <button type="button" id="map-speak-btn" class="ops-btn ops-btn-accent map-speak-btn" title="Speak turn-by-turn directions with AI Voice">
+                Speak
+              </button>
+            </div>
+            <div id="map-next-step" class="map-next-step">Select a delivery or click any landmark on the map.</div>
+            <div class="map-actions-row">
+              <button type="button" id="map-walk-btn" class="ops-btn ops-btn-primary" disabled>Walk There</button>
+              <button type="button" id="map-fly-btn" class="ops-btn ops-btn-secondary" disabled>Fly Camera</button>
+              <button type="button" id="map-clear-pin-btn" class="ops-btn ops-btn-ghost" hidden>Clear Pin</button>
+            </div>
+          </div>
+
+          <div class="board-head">
+            <span class="board-title">Turn-by-Turn Directions</span>
+            <span id="map-eta-label" class="race-tune-summary">Walk ETA --</span>
+          </div>
+          <div id="map-steps-list" class="map-steps-list"></div>
+        </div>
+
+        <!-- Cities Panel -->
+        <div id="cities-panel" class="ops-panel" hidden>
+          <div class="city-now-card">
+            <div class="city-now-label">Current District</div>
+            <div id="current-city-name" class="city-now-title">Central Town Square</div>
+            <div id="current-city-sub" class="city-now-sub">Civic plaza, Windmill Bakery &amp; Town Hall</div>
+            <div class="quick-poi-row">
+              <button type="button" id="poi-bank-btn" class="ops-btn ops-btn-secondary">Treasury Bank ($)</button>
+              <button type="button" id="poi-court-btn" class="ops-btn ops-btn-secondary">Streetball Court</button>
+            </div>
+          </div>
+          <div id="cities-list" class="cities-list"></div>
+        </div>
+
+        <!-- Car Race Panel -->
+        <div id="race-panel" class="ops-panel" hidden>
+          <div class="race-banner-card">
+            <div class="race-banner-head">
+              <div>
+                <div class="race-banner-title">Island Grand Prix</div>
+                <div class="race-banner-meta">Ring Circuit · 2 Laps · 8 Gates · 4 Cars</div>
+              </div>
+              <div class="race-best-col">
+                <span>Best Lap</span>
+                <strong id="race-pb-lap">--:--.-</strong>
+              </div>
+            </div>
+            <div class="race-cta-row">
+              <button type="button" id="start-race-btn" class="ops-btn ops-btn-primary">Start Race Now</button>
+              <button type="button" id="goto-paddock-btn" class="ops-btn ops-btn-secondary">Walk to Paddock</button>
+            </div>
+          </div>
+
+          <div class="board-head">
+            <span class="board-title">Garage &amp; Tunes</span>
+            <span id="race-tune-summary" class="race-tune-summary">Stock Spec</span>
+          </div>
+          <div id="race-car-list" class="race-car-list"></div>
+
+          <div class="board-head">
+            <span class="board-title">Circuit Leaderboard</span>
+            <button type="button" id="refresh-race-board-btn" class="ops-link-btn">Refresh</button>
+          </div>
+          <div id="race-leaderboard-list" class="race-leaderboard-list"></div>
+        </div>
+
+        <!-- Shop Panel -->
+        <div id="shop-panel" class="ops-panel" hidden>
+          <div class="shop-wallet-bar">
+            <span>Wallet: <strong id="shop-wallet-credits">120 cr</strong></span>
+            <span id="shop-boost-status" class="shop-boost-status">Earn credits via Deliveries &amp; Races</span>
+            <button type="button" id="rob-store-btn" class="ops-btn ops-btn-danger-sm" title="Rob nearby store cash register (H)">
+              Rob (H)
+            </button>
+          </div>
+          <div id="shop-store-filters" class="shop-store-filters"></div>
+          <div id="shop-satchel-box" class="shop-satchel-box" hidden></div>
+          <div id="shop-items-list" class="shop-items-list"></div>
+        </div>
+
+        <!-- Delivery Mission Panel -->
+        <div id="missions-panel" class="ops-panel">
+          <div id="courier-stats-line" class="courier-stats-line">
+            <span>Deliveries: <strong id="stat-deliveries">0</strong></span>
+            <span>&middot;</span>
+            <span>Credits: <strong id="stat-credits">0</strong></span>
+            <span>&middot;</span>
+            <span>Streak: <strong id="stat-streak">0</strong></span>
+          </div>
+
+          <div id="active-mission-box" class="active-mission-box" hidden>
+            <div class="mission-box-top">
+              <div>
+                <div id="active-mission-title" class="mission-title">Bakery Morning Run</div>
+                <div id="active-mission-cargo" class="mission-cargo">Cargo: Warm Sourdough Crates</div>
+              </div>
+              <div class="mission-timer-col">
+                <span id="active-mission-urgency" class="mission-urgency-tag">Priority</span>
+                <span id="active-mission-timer" class="mission-timer">01:30</span>
+              </div>
+            </div>
+
+            <div class="mission-steps">
+              <div id="step-pickup" class="mission-step">
+                <span class="step-index">1</span>
+                <span id="step-pickup-name" class="step-text">Pickup: Windmill Bakery</span>
+              </div>
+              <div id="step-dropoff" class="mission-step">
+                <span class="step-index">2</span>
+                <span id="step-dropoff-name" class="step-text">Deliver: Meadowbrook Hospital</span>
+              </div>
+            </div>
+
+            <div class="mission-telemetry">
+              <div class="mission-bearing-wrap">
+                <svg id="mission-compass-arrow" class="mission-compass-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <polygon points="12 3 19 20 12 16 5 20 12 3" fill="currentColor" />
+                </svg>
+                <span id="active-mission-dist" class="mission-dist">84 m</span>
+              </div>
+              <span id="active-mission-range-note" class="mission-range-note">Follow beacon</span>
+            </div>
+
+            <div class="mission-actions">
+              <button type="button" id="mission-ride-btn" class="ops-btn ops-btn-primary ops-ride-highlight">
+                🛵 Ride Scooter [R]
+              </button>
+              <button type="button" id="mission-primary-btn" class="ops-btn ops-btn-secondary">
+                Locate Stop
+              </button>
+              <button type="button" id="mission-map-btn" class="ops-btn ops-btn-secondary">
+                Route Map
+              </button>
+              <button type="button" id="mission-walk-btn" class="ops-btn ops-btn-secondary">
+                Walk Mode
+              </button>
+              <button type="button" id="mission-cancel-btn" class="ops-btn ops-btn-ghost">
+                Cancel
+              </button>
+            </div>
+          </div>
+
+          <div id="mission-board-box" class="mission-board-box">
+            <div class="board-head">
+              <span class="board-title">Available Routes</span>
+              <button type="button" id="refresh-missions-btn" class="ops-link-btn">
+                Refresh Routes
+              </button>
+            </div>
+            <div id="mission-list" class="mission-list"></div>
+            <button type="button" id="ask-dispatch-mission-btn" class="ops-btn ops-btn-secondary ops-btn-full">
+              Ask Police Dispatch for a Custom Run
+            </button>
+          </div>
+        </div>
+
+        <!-- Police Chat / Radio Dispatch Panel -->
+        <div id="radio-panel" class="ops-panel" hidden>
+          <div class="radio-toolbar">
+            <label class="radio-ai-toggle" for="radio-ai-checkbox">
+              <input type="checkbox" id="radio-ai-checkbox" checked />
+              <span>Ask Officer Sunny (AI Dispatch)</span>
+            </label>
+            <span id="radio-status-line" class="radio-status-line">Ch. 04 · Live</span>
+          </div>
+
+          <div id="radio-feed" class="radio-feed" role="log" aria-live="polite"></div>
+
+          <div class="radio-quick-row">
+            <button type="button" class="radio-quick-btn" data-radio-prompt="Requesting a delivery assignment nearby.">
+              Request delivery
+            </button>
+            <button type="button" class="radio-quick-btn" data-radio-prompt="Dispatch, any traffic incidents or busy roads?">
+              Traffic report
+            </button>
+            <button type="button" class="radio-quick-btn" data-radio-prompt="What landmarks are closest to my patrol position?">
+              Nearby places
+            </button>
+          </div>
+
+          <form id="radio-form" class="radio-form" autocomplete="off">
+            <input
+              id="radio-input"
+              type="text"
+              maxlength="220"
+              placeholder="Transmit on Police Radio…"
+              aria-label="Police radio message"
+            />
+            <button type="submit" id="radio-send-btn" class="ops-btn ops-btn-primary">
+              Send
+            </button>
+          </form>
+        </div>
+
+        <!-- Live Multiplayer Hub Panel -->
+        <div id="players-panel" class="ops-panel" hidden>
+          <div class="mp-status-card">
+            <div class="mp-status-top">
+              <div>
+                <div id="mp-conn-badge" class="mp-conn-badge">Live Multiplayer · Connecting</div>
+                <div id="mp-online-summary" class="mp-online-summary">1 explorer online</div>
+              </div>
+              <button type="button" id="mp-copy-invite-btn" class="ops-btn ops-btn-secondary mp-copy-btn">
+                Copy Invite
+              </button>
+            </div>
+
+            <form id="mp-name-form" class="mp-name-form" autocomplete="off">
+              <input
+                id="mp-name-input"
+                type="text"
+                maxlength="20"
+                placeholder="Your courier callsign…"
+                aria-label="Courier callsign"
+              />
+              <button type="submit" id="mp-save-name-btn" class="ops-btn ops-btn-primary">
+                Set Name
+              </button>
+            </form>
+
+            <div class="mp-emote-row" role="group" aria-label="Multiplayer emotes">
+              <button type="button" id="mp-emote-wave" class="ops-btn ops-btn-secondary">Wave</button>
+              <button type="button" id="mp-emote-jump" class="ops-btn ops-btn-secondary">Jump</button>
+              <button type="button" id="mp-emote-cheer" class="ops-btn ops-btn-accent">Cheer</button>
+            </div>
+
+            <div class="mp-voice-box">
+              <div class="mp-voice-controls">
+                <button type="button" id="mp-mic-open-btn" class="ops-btn ops-btn-secondary" aria-pressed="false">
+                  Mic Off
+                </button>
+                <button type="button" id="mp-mic-ptt-btn" class="ops-btn ops-btn-accent">
+                  Hold Talk [V]
+                </button>
+                <div class="mp-mic-meter" aria-label="Microphone level">
+                  <div id="mp-mic-meter-fill" class="mp-mic-meter-fill"></div>
+                </div>
+              </div>
+              <div class="mp-voice-persona-row">
+                <label class="mp-voice-label" for="mp-voice-select">Your Voice</label>
+                <select id="mp-voice-select" class="mp-voice-select" aria-label="Your player voice style">
+                  <option value="Puck">Puck · Upbeat</option>
+                  <option value="Kore">Kore · Warm</option>
+                  <option value="Zephyr">Zephyr · Crisp</option>
+                  <option value="Fenrir">Fenrir · Bold</option>
+                  <option value="Charon">Charon · Deep</option>
+                </select>
+                <button type="button" id="mp-voice-test-btn" class="ops-btn ops-btn-secondary">
+                  Test
+                </button>
+              </div>
+            </div>
+
+            <label class="radio-ai-toggle" for="mp-voice-chat-checkbox">
+              <input type="checkbox" id="mp-voice-chat-checkbox" checked />
+              <span>AI Voice reads peer chat &amp; arrivals aloud</span>
+            </label>
+          </div>
+
+          <div class="board-head">
+            <span class="board-title">Explorers on GeminIsland</span>
+            <span id="mp-transport-pill" class="race-tune-summary">Sync</span>
+          </div>
+          <div id="mp-peers-list" class="mp-peers-list"></div>
+
+          <form id="mp-chat-form" class="radio-form" autocomplete="off">
+            <input
+              id="mp-chat-input"
+              type="text"
+              maxlength="220"
+              placeholder="Say hello to players online…"
+              aria-label="Send multiplayer chat message"
+            />
+            <button type="submit" id="mp-chat-send-btn" class="ops-btn ops-btn-primary">
+              Chat
+            </button>
+          </form>
+        </div>
+      </section>
+    </div>
+
+    <!-- Hover nameplate + optional live API readout -->
+    <div id="hover-card" class="hover-card" hidden>
+      <div id="hover-name" class="hover-name"></div>
+      <div id="hover-feed" class="hover-feed" hidden></div>
+      <div id="hover-status" class="hover-status"></div>
+    </div>
+
+    <!-- Transient world note -->
+    <div id="weave-toast" class="weave-toast" role="status" aria-live="polite" hidden></div>
+
+    <!-- Mobile First-Person Walk Joystick (forward/back + strafe) -->
+    <div id="walk-joystick" class="walk-joystick" aria-label="Walk movement joystick" hidden>
+      <svg class="walk-joystick-svg" viewBox="-64 -64 128 128" fill="none" aria-hidden="true">
+        <circle cx="0" cy="0" r="55" stroke="#161b18" stroke-opacity="0.1" stroke-width="1.2" />
+        <polyline id="walk-joy-up" class="walk-joy-chevron" points="-7,-41 0,-49 7,-41" />
+        <polyline id="walk-joy-down" class="walk-joy-chevron" points="-7,41 0,49 7,41" />
+        <polyline id="walk-joy-left" class="walk-joy-chevron" points="-41,-7 -49,0 -41,7" />
+        <polyline id="walk-joy-right" class="walk-joy-chevron" points="41,-7 49,0 41,7" />
+        <g id="walk-joystick-knob" transform="translate(0 0)">
+          <circle cx="0" cy="3" r="22" fill="#0f1c12" fill-opacity="0.22" />
+          <circle cx="0" cy="0" r="21.5" fill="#ffffff" stroke="#161b18" stroke-opacity="0.18" stroke-width="1.5" />
+          <circle cx="0" cy="0" r="7.5" fill="#161b18" fill-opacity="0.07" stroke="#161b18" stroke-opacity="0.22" stroke-width="1.4" />
+        </g>
+      </svg>
+    </div>
+
+    <!-- Subtle First-Person Exit Hint (Desktop Walk Mode) -->
+    <button type="button" id="walk-esc-hint" class="walk-esc-hint" aria-label="Press Escape to exit first-person view" hidden>
+      <kbd class="walk-esc-key">Esc</kbd><span>to exit view</span>
+    </button>
+
+    <!-- Villager & Signpost Dialogue Card -->
+    <div id="npc-dialog-card" class="npc-dialog-card" role="dialog" aria-label="Neighborhood interaction" hidden>
+      <div class="npc-dialog-head">
+        <div>
+          <div id="npc-dialog-name" class="npc-dialog-name">Villager</div>
+          <div id="npc-dialog-meta" class="npc-dialog-meta">Neighbor · Central Town Square</div>
+        </div>
+        <button type="button" id="npc-dialog-close" class="icon-close-btn" aria-label="Close dialogue">&times;</button>
+      </div>
+      <div id="npc-dialog-body" class="npc-dialog-body"></div>
+      <div id="npc-dialog-actions" class="npc-dialog-actions" hidden></div>
+    </div>
+
+    <!-- Top-Center Weather & Wanted Status Strip -->
+    <div id="weather-wanted-bar" class="weather-wanted-bar" aria-label="Island weather and police status">
+      <span id="weather-badge" class="weather-badge">Sunlit</span>
+      <button type="button" id="weather-cycle-btn" class="weather-bar-btn" title="Switch Clear / Rain / Snow">
+        Clear
+      </button>
+      <button type="button" id="weather-random-btn" class="weather-bar-btn" title="Trigger random rain or snow event">
+        Weather Event
+      </button>
+      <span id="wanted-badge" class="wanted-badge" hidden>Wanted ★ · Loot 0 cr</span>
+    </div>
+
+    <!-- Safe / Register Heist Cracking Progress Card -->
+    <div id="heist-card" class="heist-card" role="status" aria-live="polite" hidden>
+      <div class="heist-card-head">
+        <strong id="heist-title">Cracking Treasury Bank Vault…</strong>
+        <button type="button" id="heist-cancel-btn" class="ops-btn ops-btn-ghost">Abort</button>
+      </div>
+      <div class="heist-bar-track">
+        <div id="heist-bar-fill" class="heist-bar-fill"></div>
+      </div>
+    </div>
+
+    <!-- Police Stop Resolution Modal Card -->
+    <div id="police-stop-card" class="police-stop-card" role="dialog" aria-label="Police Traffic Stop" hidden>
+      <div class="police-stop-head">
+        <div>
+          <div id="police-stop-unit" class="police-stop-unit">Unit 04 · Officer Sunny</div>
+          <div id="police-stop-reason" class="police-stop-reason">Patrol Intercept — Pull Over!</div>
+        </div>
+      </div>
+      <div id="police-stop-stats" class="police-stop-stats">Wanted: ★★ · Hot Loot: 110 cr · Fine: 120 cr</div>
+      <div class="police-stop-actions">
+        <button type="button" id="stop-comply-btn" class="ops-btn ops-btn-primary">Comply &amp; Pay Fine</button>
+        <button type="button" id="stop-bluff-btn" class="ops-btn ops-btn-secondary">Talk / Bluff</button>
+        <button type="button" id="stop-flee-btn" class="ops-btn ops-btn-danger">Flee Pursuit!</button>
+      </div>
+    </div>
+
+    <!-- Interactive Streetball Court Shot-Meter HUD -->
+    <div id="bball-hud" class="bball-hud" role="dialog" aria-label="Streetball Court" hidden>
+      <div class="bball-hud-head">
+        <div>
+          <div class="bball-title">Streetball Half-Court</div>
+          <div id="bball-weather-note" class="bball-weather-note">Calm conditions · Sweet spot standard</div>
+        </div>
+        <button type="button" id="bball-close-btn" class="icon-close-btn" aria-label="Leave court">&times;</button>
+      </div>
+      <div class="bball-spot-row" role="group" aria-label="Shot spot">
+        <button type="button" class="bball-spot-btn is-active" data-bball-spot="0">Free Throw (2pt)</button>
+        <button type="button" class="bball-spot-btn" data-bball-spot="1">Left 3pt</button>
+        <button type="button" class="bball-spot-btn" data-bball-spot="2">Right 3pt</button>
+      </div>
+      <div class="bball-meter-wrap">
+        <div id="bball-sweet-zone" class="bball-sweet-zone"></div>
+        <div id="bball-cursor" class="bball-cursor"></div>
+      </div>
+      <div class="bball-foot">
+        <span id="bball-score-line" class="bball-score-line">Pts: 0 · Streak: 0</span>
+        <button type="button" id="bball-shoot-btn" class="ops-btn ops-btn-primary">Shoot (Space)</button>
+      </div>
+    </div>
+
+    <!-- Active Car Race HUD (only rendered during Grand Prix) -->
+    <div id="race-hud" class="race-hud" hidden>
+      <div class="race-hud-card">
+        <div class="race-hud-stat">
+          <span>Pos</span>
+          <strong id="race-hud-place">1st / 4</strong>
+        </div>
+        <div class="race-hud-stat">
+          <span>Lap</span>
+          <strong id="race-hud-lap">1 / 2</strong>
+        </div>
+        <div class="race-hud-stat">
+          <span>Gates</span>
+          <strong id="race-hud-gates">0 / 8</strong>
+        </div>
+        <div class="race-hud-stat">
+          <span>Time</span>
+          <strong id="race-hud-time">00:00.0</strong>
+        </div>
+        <div class="race-hud-speed">
+          <strong id="race-hud-speed">0</strong>
+          <span>km/h</span>
+        </div>
+        <div class="race-hud-nitro">
+          <div id="race-hud-nitro-fill" class="race-hud-nitro-fill"></div>
+        </div>
+        <div class="race-hud-btns">
+          <button type="button" id="race-cam-btn" class="race-hud-btn" title="Camera view (C)">View</button>
+          <button type="button" id="race-respawn-btn" class="race-hud-btn" title="Recover to track (R)">Track</button>
+          <button type="button" id="race-exit-btn" class="race-hud-btn is-exit" title="Exit car (Esc)">Exit</button>
+        </div>
+      </div>
+      <div id="race-countdown" class="race-countdown" hidden>READY…</div>
+      <div id="race-touch-controls" class="race-touch-controls" hidden>
+        <div class="race-touch-cluster">
+          <button type="button" class="race-touch-btn" id="race-touch-left">&larr;</button>
+          <button type="button" class="race-touch-btn" id="race-touch-right">&rarr;</button>
+        </div>
+        <div class="race-touch-cluster">
+          <button type="button" class="race-touch-btn is-brake" id="race-touch-brake">Brake</button>
+          <button type="button" class="race-touch-btn is-nitro" id="race-touch-nitro">Nitro</button>
+          <button type="button" class="race-touch-btn is-gas" id="race-touch-gas">Gas</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Corner GPS Minimap Radar -->
+    <div id="delivery-minimap" class="delivery-minimap" aria-label="Island GPS minimap">
+      <button type="button" id="minimap-open-btn" class="minimap-canvas-btn" title="Open full island map (N)">
+        <canvas id="minimap-canvas" class="minimap-canvas" width="132" height="132"></canvas>
+      </button>
+      <div class="minimap-readout">
+        <span id="minimap-dist" class="minimap-dist">Island GPS</span>
+        <span id="minimap-turn" class="minimap-turn">Tap to open map</span>
+        <button type="button" id="minimap-ride-btn" class="minimap-ride-pill" title="Hop on / Dismount Courier Scooter [R]">🛵 Scooter [R]</button>
+      </div>
+    </div>
+
+    <!-- AI Voice-Over Assistant Bar -->
+    <aside id="voice-bar" class="voice-bar" aria-label="AI Voice-Over">
+      <div class="voice-bar-head">
+        <span class="voice-eq" id="voice-eq" aria-hidden="true">
+          <i></i><i></i><i></i>
+        </span>
+        <span id="voice-speaker-badge" class="voice-speaker-badge">AI Voice · Ready</span>
+        <div class="voice-bar-btns">
+          <button type="button" id="voice-replay-btn" class="voice-chip-btn" title="Listen / replay last voice-over">
+            Listen
+          </button>
+          <button type="button" id="voice-toggle-btn" class="voice-chip-btn is-on" aria-pressed="true" title="Toggle AI Voice-Over">
+            Voice On
+          </button>
+        </div>
+      </div>
+      <div id="voice-caption" class="voice-caption">Turn-by-turn GPS &amp; Officer Sunny voice ready.</div>
+    </aside>
+
+    <!-- Contextual First-Person Interaction Prompts -->
+    <div class="interact-stack">
+      <button type="button" id="interact-secondary-prompt" class="interact-prompt interact-secondary" hidden>
+        <kbd id="interact-secondary-key" class="interact-key">F</kbd><span id="interact-secondary-label">Shop</span>
+      </button>
+      <button type="button" id="interact-prompt" class="interact-prompt" hidden>
+        <kbd id="interact-key" class="interact-key">E</kbd><span id="interact-label">Enter</span>
+      </button>
+    </div>
+
+    <!-- Bottom-Anchored Explore & Build Dock (never blocks the 3D meadow) -->
+    <div class="bottom-dock">
+      <!-- 1. Explore-first single Add button -->
+      <button type="button" id="add-btn" class="dock-pill dock-pill-add">
+        + Add
+      </button>
+
+      <!-- 2. Spot-picking prompt pill -->
+      <div id="pick-spot-pill" class="dock-pill dock-pill-pick" hidden>
+        <span>Click where to add</span>
+        <button type="button" id="cancel-pick-btn" class="icon-close-btn" aria-label="Cancel spot selection">
+          &times;
+        </button>
+      </div>
+
+      <!-- 3. Compact bottom building box -->
+      <section id="bottom-builder" class="bottom-builder" aria-label="Add creation" hidden>
+        <div class="builder-bar">
+          <button type="button" id="move-spot-btn" class="spot-chip-btn">Move spot</button>
+          <button type="button" id="close-builder-btn" class="icon-close-btn" aria-label="Close">
+            &times;
+          </button>
+        </div>
+
+        <div class="builder-row">
+          <label id="drop-zone" class="drop-tile" for="image-input" title="Upload image">
+            <input id="image-input" type="file" accept="image/*" hidden />
+            <div id="drop-empty" class="drop-tile-empty">
+              <svg class="upload-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true">
+                <rect x="3" y="4" width="18" height="16" rx="3" />
+                <circle cx="8.5" cy="9.5" r="1.5" />
+                <path d="M21 15l-4.5-4.5L9 18" />
+              </svg>
+              <span>Photo</span>
+            </div>
+            <div id="drop-preview-wrap" class="drop-preview-wrap" hidden>
+              <img id="drop-preview-img" alt="Selected subject" />
+              <button type="button" id="clear-image-btn" class="clear-img-btn" aria-label="Remove image">
+                &times;
+              </button>
+            </div>
+          </label>
+
+          <textarea
+            id="prompt-input"
+            rows="2"
+            maxlength="480"
+            placeholder="Describe what to add…"
+            aria-label="Describe what to add"
+          ></textarea>
+        </div>
+
+        <p id="form-error" class="form-error" role="alert" hidden></p>
+
+        <p class="upload-disclaimer">
+          By using this feature, you confirm that you have the necessary rights to any content that you upload. Do not generate content that infringes on others’ intellectual property or privacy rights. Your use of this generative AI service is subject to our <a href="https://policies.google.com/terms/generative-ai/use-policy" target="_blank" rel="noopener noreferrer">Prohibited Use Policy</a>. Please note that uploads, including those from Google Workspace, may be used to develop and improve Google products and services in accordance with our <a href="https://aistudio.google.com/docs/terms?e=0" target="_blank" rel="noopener noreferrer">terms</a>.
+        </p>
+
+        <button type="button" id="sculpt-btn" class="primary-btn">Build</button>
+      </section>
+
+      <!-- 4. Building in background pill -->
+      <div id="building-pill" class="dock-pill dock-pill-building" role="status" aria-live="polite" hidden>
+        <span class="pill-spinner" aria-hidden="true"></span>
+        <span class="building-pill-copy">
+          <span id="building-pill-label" class="building-pill-title">Approving query…</span>
+          <span id="building-pill-sub" class="building-pill-sub">Being built with Gemini 4 Hydrogen</span>
+        </span>
+      </div>
+
+      <!-- 5. Ready -> Click to fly camera to it -->
+      <button type="button" id="ready-goto-btn" class="dock-pill dock-pill-ready" hidden>
+        <span class="live-dot live-dot-pulse" aria-hidden="true"></span>
+        <span id="ready-goto-label">Ready · Go to creation</span>
+      </button>
+
+      <!-- 6. Locate existing creation -->
+      <button type="button" id="locate-mine-btn" class="dock-pill dock-pill-placed" hidden>
+        <span class="live-dot" aria-hidden="true"></span>
+        <span id="locate-mine-label">Locate yours</span>
+      </button>
+    </div>
+
+    <!-- Vehicle Dashboard & Speed Levels HUD (Courier Scooter & Race Cars) -->
+    <div id="speed-level-hud" class="speed-level-hud" role="region" aria-label="Vehicle speed and gears" hidden>
+      <div class="speed-hud-inner">
+        <div class="speed-gauge-card">
+          <div class="speed-number-wrap">
+            <span id="speed-val" class="speed-number">0</span>
+            <span class="speed-unit">KM/H</span>
+          </div>
+          <div class="speed-meta-wrap">
+            <div class="speed-vehicle-header">
+              <span id="speed-vehicle-name" class="speed-vehicle-name">Courier Scooter</span>
+              <span id="speed-level-badge" class="speed-level-badge">L2 City</span>
+            </div>
+            <div class="speed-levels-bar" role="group" aria-label="Speed level selector">
+              <button type="button" class="speed-lvl-pill" data-speed-level="1" title="Level 1: Eco [1]">
+                <span class="lvl-num">1</span>
+                <span class="lvl-label">Eco</span>
+              </button>
+              <button type="button" class="speed-lvl-pill is-active" data-speed-level="2" title="Level 2: City [2]">
+                <span class="lvl-num">2</span>
+                <span class="lvl-label">City</span>
+              </button>
+              <button type="button" class="speed-lvl-pill" data-speed-level="3" title="Level 3: Express [3]">
+                <span class="lvl-num">3</span>
+                <span class="lvl-label">Express</span>
+              </button>
+              <button type="button" class="speed-lvl-pill" data-speed-level="4" title="Level 4: Turbo [4]">
+                <span class="lvl-num">4</span>
+                <span class="lvl-label">Turbo</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="speed-hud-controls">
+          <button type="button" id="speed-horn-btn" class="speed-ctrl-btn" title="Beep scooter horn [H]">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
+              <path d="M15.54 8.46a5 5 0 0 1 0 7.07" />
+            </svg>
+            <span>Horn [H]</span>
+          </button>
+          <button type="button" id="speed-dismount-btn" class="speed-ctrl-btn is-dismount" title="Dismount ride [R]">
+            <span>Dismount [R]</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Quick Talk & Greet Friends Bar -->
+    <div id="greeting-bar" class="greeting-bar" role="region" aria-label="Quick greetings" hidden>
+      <div class="greeting-bar-head">
+        <span class="greeting-bar-title">💬 Talk &amp; Greet Friends</span>
+        <button type="button" id="greeting-close-btn" class="greeting-close-btn" aria-label="Close greetings">&times;</button>
+      </div>
+      <div class="greeting-pills">
+        <button type="button" class="greeting-pill-btn" data-greet="Hey friend! 👋">👋 Hey friend!</button>
+        <button type="button" class="greeting-pill-btn" data-greet="🛵 Hop on, let's take a ride!">🛵 Hop on, let's ride!</button>
+        <button type="button" class="greeting-pill-btn" data-greet="🏁 Ready for a Grand Prix race?">🏁 Ready to race?</button>
+        <button type="button" class="greeting-pill-btn" data-greet="🌲 Let's explore GeminIsland!">🌲 Let's explore!</button>
+        <button type="button" class="greeting-pill-btn" data-greet="📦 Delivering parcels on the island!">📦 Delivery time!</button>
+      </div>
+      <form id="custom-greet-form" class="custom-greet-form">
+        <input type="text" id="custom-greet-input" placeholder="Or type your own greeting..." maxlength="42" />
+        <button type="submit" class="custom-greet-btn">Say</button>
+      </form>
+    </div>
+
+    <!-- Explore Island Features Drawer Showcase Modal -->
+    <dialog id="features-drawer" class="features-drawer" closedby="any" aria-label="Island Features Showcase">
+      <div class="features-drawer-content">
+        <header class="features-drawer-header">
+          <div class="features-drawer-title-wrap">
+            <span class="features-badge">⚡ GeminIsland Systems</span>
+            <h2 class="features-drawer-title">Explore Island Features</h2>
+            <p class="features-drawer-sub">Discover all interactive activities, vehicles, physics, dynamic weather and multiplayer features.</p>
+          </div>
+          <button type="button" id="features-close-btn" class="features-close-btn" aria-label="Close features">&times;</button>
+        </header>
+
+        <div class="features-grid">
+          <!-- 1. Delivery Ride -->
+          <article class="feature-card">
+            <div class="feature-card-icon">🛵</div>
+            <div class="feature-card-body">
+              <div class="feature-card-tag">Vehicle &amp; Missions</div>
+              <h3 class="feature-card-title">Courier Delivery Ride</h3>
+              <p class="feature-card-desc">Ride the nimble courier scooter equipped with rear cargo crate, speed levels 1-4, leaning physics, and horn.</p>
+              <div class="feature-card-footer">
+                <span class="feature-key">[R] Ride / Dismount</span>
+                <button type="button" class="feature-action-btn" data-action="mount_ride">Ride Scooter</button>
+              </div>
+            </div>
+          </article>
+
+          <!-- 2. Speed Levels -->
+          <article class="feature-card">
+            <div class="feature-card-icon">⚡</div>
+            <div class="feature-card-body">
+              <div class="feature-card-tag">Speed &amp; Physics</div>
+              <h3 class="feature-card-title">Driving Speed Levels (1-4)</h3>
+              <p class="feature-card-desc">Shift between 4 gears: Level 1 Eco (32 km/h), Level 2 City (58 km/h), Level 3 Express (84 km/h), and Level 4 Turbo (108 km/h).</p>
+              <div class="feature-card-footer">
+                <span class="feature-key">Keys [1] [2] [3] [4]</span>
+                <button type="button" class="feature-action-btn" data-action="open_deliveries">View Missions</button>
+              </div>
+            </div>
+          </article>
+
+          <!-- 3. Visible Player & 3rd Person View -->
+          <article class="feature-card">
+            <div class="feature-card-icon">👀</div>
+            <div class="feature-card-body">
+              <div class="feature-card-tag">Camera &amp; Avatar</div>
+              <h3 class="feature-card-title">Visible Character (3P / 1P)</h3>
+              <p class="feature-card-desc">See your customized avatar on camera running, walking, jumping, and riding. Smooth camera zoom and quick perspective toggle.</p>
+              <div class="feature-card-footer">
+                <span class="feature-key">[C] Toggle 3P/1P</span>
+                <button type="button" class="feature-action-btn" data-action="toggle_cam">Switch Camera</button>
+              </div>
+            </div>
+          </article>
+
+          <!-- 4. Talk & Greet Friends -->
+          <article class="feature-card">
+            <div class="feature-card-icon">👋</div>
+            <div class="feature-card-body">
+              <div class="feature-card-tag">Multiplayer &amp; Voice</div>
+              <h3 class="feature-card-title">Talk &amp; Greet Friends</h3>
+              <p class="feature-card-desc">Wave and speak friendly greetings aloud with overhead animated speech bubbles, voice narrator audio, and chat broadcast.</p>
+              <div class="feature-card-footer">
+                <span class="feature-key">[G] Greet Nearby</span>
+                <button type="button" class="feature-action-btn" data-action="greet_friends">Say Hello</button>
+              </div>
+            </div>
+          </article>
+
+          <!-- 5. Hide HUD / Clean Background -->
+          <article class="feature-card">
+            <div class="feature-card-icon">🏞️</div>
+            <div class="feature-card-body">
+              <div class="feature-card-tag">Scenic Photography</div>
+              <h3 class="feature-card-title">Hide UI / Background View</h3>
+              <p class="feature-card-desc">Hide all overlays to view the clean, cinematic voxel island background with your character front-and-center.</p>
+              <div class="feature-card-footer">
+                <span class="feature-key">[U] Hide / Show HUD</span>
+                <button type="button" class="feature-action-btn" data-action="hide_hud">Hide UI Now</button>
+              </div>
+            </div>
+          </article>
+
+          <!-- 6. Grand Prix Track Racing -->
+          <article class="feature-card">
+            <div class="feature-card-icon">🚗</div>
+            <div class="feature-card-body">
+              <div class="feature-card-tag">Circuit Racing</div>
+              <h3 class="feature-card-title">Island Grand Prix</h3>
+              <p class="feature-card-desc">Compete in 3D circuit time trials with Rally Buggies, Apex GT track cars, nitro boosts, and live leaderboards.</p>
+              <div class="feature-card-footer">
+                <span class="feature-key">8 Checkpoints</span>
+                <button type="button" class="feature-action-btn" data-action="open_race">Start Race</button>
+              </div>
+            </div>
+          </article>
+
+          <!-- 7. Police Patrols & Bank Heist -->
+          <article class="feature-card">
+            <div class="feature-card-icon">🚨</div>
+            <div class="feature-card-body">
+              <div class="feature-card-tag">Quests &amp; Patrols</div>
+              <h3 class="feature-card-title">Police Stops &amp; Bank Vault</h3>
+              <p class="feature-card-desc">Interactive traffic stops by Officer Sunny, radar sweeps, and voluntary bank vault heist quests with alarm timers.</p>
+              <div class="feature-card-footer">
+                <span class="feature-key">Police Dispatch</span>
+                <button type="button" class="feature-action-btn" data-action="open_radio">Police Radio</button>
+              </div>
+            </div>
+          </article>
+
+          <!-- 8. Half-Court Basketball -->
+          <article class="feature-card">
+            <div class="feature-card-icon">🏀</div>
+            <div class="feature-card-body">
+              <div class="feature-card-tag">Mini-Game</div>
+              <h3 class="feature-card-title">Half-Court Basketball</h3>
+              <p class="feature-card-desc">Take 3-point skill shots from three shooting spots with physical rim bounce, swish net audio, and streak tracking.</p>
+              <div class="feature-card-footer">
+                <span class="feature-key">Skill Meter</span>
+                <button type="button" class="feature-action-btn" data-action="goto_court">Play Court</button>
+              </div>
+            </div>
+          </article>
+
+          <!-- 9. Dynamic Weather System -->
+          <article class="feature-card">
+            <div class="feature-card-icon">🌦️</div>
+            <div class="feature-card-body">
+              <div class="feature-card-tag">Atmosphere</div>
+              <h3 class="feature-card-title">Dynamic Weather (Rain/Snow)</h3>
+              <p class="feature-card-desc">Random rain and snow events alter terrain shaders with wet puddles and frost, while affecting vehicle grip and footstep SFX.</p>
+              <div class="feature-card-footer">
+                <span class="feature-key">Auto Weather</span>
+                <button type="button" class="feature-action-btn" data-action="cycle_weather">Change Weather</button>
+              </div>
+            </div>
+          </article>
+
+          <!-- 10. Adaptive Background Music -->
+          <article class="feature-card">
+            <div class="feature-card-icon">🎵</div>
+            <div class="feature-card-body">
+              <div class="feature-card-tag">Soundtrack</div>
+              <h3 class="feature-card-title">Adaptive Music Engine</h3>
+              <p class="feature-card-desc">5 dynamic radio stations (Sunlit Breeze, Lo-Fi Rhodes, Winter Celesta, Synthwave, Chase Groove) with indoor filtering.</p>
+              <div class="feature-card-footer">
+                <span class="feature-key">5 Stations</span>
+                <button type="button" class="feature-action-btn" data-action="open_music">Pick Station</button>
+              </div>
+            </div>
+          </article>
+        </div>
+      </div>
+    </dialog>
+
+    <dialog id="avatar-dialog" class="avatar-dialog" closedby="any" aria-label="Character customizer"></dialog>
+
+    <script type="module" src="/client/app.js"></script>
+  </body>
+</html>
